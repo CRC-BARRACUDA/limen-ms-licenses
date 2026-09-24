@@ -1,12 +1,12 @@
 [module]
-name = "licenses"
+name = "ms-licenses"
 display_name = "Windows & Office licences"
 version = "0.1.0"
 language = "python"
 entry = "main.py"
 description = "Activation state of Windows and Office on THIS machine — status, channel, partial key, KMS host, grace and expiry."
 authors = ["Limen"]
-repo = "CRC-BARRACUDA/limen-licenses"
+repo = "CRC-BARRACUDA/limen-ms-licenses"
 tags = ["windows", "licensing", "inventory"]
 
 # Windows only, and it says so rather than starting elsewhere and answering with
@@ -16,7 +16,7 @@ tags = ["windows", "licensing", "inventory"]
 os = ["windows"]
 
 [provides]
-capabilities = ["license.local"]
+capabilities = ["licenses.ms"]
 
 [optional.capabilities]
 # When a report provider is installed, a "Make Report" action appears.

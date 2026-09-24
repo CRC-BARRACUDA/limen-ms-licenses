@@ -258,6 +258,8 @@ def test_manifest_says_windows():
     toml = open(os.path.join(os.path.dirname(os.path.abspath(__file__)), "limen.toml"),
                 encoding="utf-8").read()
     bad = check("the manifest declares its os", 'os = ["windows"]' in toml)
+    bad += check("and scopes its capability to Microsoft, not to licences at large",
+                 'capabilities = ["licenses.ms"]' in toml)
     bad += check("and asks for no more than it needs",
                  "network = true" not in toml and "elevate = true" not in toml)
     return bad

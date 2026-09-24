@@ -1,4 +1,4 @@
-"""licenses — how Windows and Office are activated on THIS machine.
+"""ms-licenses — how Windows and Office are activated on THIS machine.
 
 Status, channel, the partial key, the KMS host it talks to, and what is running
 on a grace period. The `slmgr /dlv` answer, without the four pop-ups.
@@ -50,8 +50,8 @@ def t(key, **args):
     return CAT.tr(_lang["code"], key, **args)
 
 
-CAP = "license.local"
-m = Module("licenses", [CAP])
+CAP = "licenses.ms"
+m = Module("ms-licenses", [CAP])
 
 
 def _sync_locale():
@@ -236,14 +236,14 @@ def scan(params, host):
                          error=t("error.no_powershell"))
         else:
             _last.update(lics=lics, facts=facts, flags=flags, error="")
-            host.log(f"licenses: {len(lics)} licence(s), {len(facts)} fact(s)")
+            host.log(f"ms-licenses: {len(lics)} licence(s), {len(facts)} fact(s)")
     except FileNotFoundError:
         _last.update(lics=None, error=t("error.no_powershell"))
     except subprocess.TimeoutExpired:
         _last.update(lics=None, error=t("error.timeout"))
     except Exception as exc:  # noqa: BLE001
         _last.update(lics=None, error=str(exc))
-        host.log(f"licenses: scan failed: {exc}")
+        host.log(f"ms-licenses: scan failed: {exc}")
     return m._view_spec()
 
 

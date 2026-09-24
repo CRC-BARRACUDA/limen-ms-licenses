@@ -1,4 +1,4 @@
-# limen-licenses
+# limen-ms-licenses
 
 How **Windows and Office are activated on this machine** — status, channel, the
 partial key, the KMS host, and whatever is running on a grace period. The
@@ -69,7 +69,7 @@ this machine is licensed. "This module is for windows" reads like what it is.
 
 ## For other modules
 
-It provides `license.local`:
+It provides `licenses.ms`:
 
 ```json
 { "method": "licenses", "params": { "kind": "office", "ok": false } }
