@@ -1,0 +1,12 @@
+# Developed on both Windows and Linux with core.autocrlf=true, which rewrites
+# checked-out text files with CRLF. That breaks anything the OS has to execute.
+# Pin line endings per file type instead of leaving it to the platform.
+
+* text=auto
+
+# The PowerShell query is a Python string literal inside main.py and is passed to
+# `powershell -Command` as an argument, so it never touches the disk — but
+# main.py itself is run by the host's interpreter, and a Python file is fine
+# either way. These are here for anything added later.
+*.sh   text eol=lf
+*.ps1  text eol=crlf

@@ -1,0 +1,37 @@
+[module]
+name = "licenses"
+display_name = "Windows & Office licences"
+version = "0.1.0"
+language = "python"
+entry = "main.py"
+description = "Activation state of Windows and Office on THIS machine — status, channel, partial key, KMS host, grace and expiry."
+authors = ["Limen"]
+repo = "CRC-BARRACUDA/limen-licenses"
+tags = ["windows", "licensing", "inventory"]
+
+# Windows only, and it says so rather than starting elsewhere and answering with
+# an empty list. The licensing store this reads — `SoftwareLicensingProduct` and
+# the Click-to-Run registry — exists on no other platform, so an empty answer
+# here would read as "nothing is licensed" rather than "wrong machine".
+os = ["windows"]
+
+[provides]
+capabilities = ["license.local"]
+
+[optional.capabilities]
+# When a report provider is installed, a "Make Report" action appears.
+"report.build" = ">=0.1"
+
+[permissions]
+# Runs PowerShell to query the licensing store. Nothing is activated, rearmed or
+# changed — the module reads.
+subprocess = true
+
+# Deliberately NOT here:
+#
+#   network — the module never leaves the machine. Activation state is read
+#     locally; it does not phone Microsoft and does not report anywhere.
+#
+#   elevate — one field (the OEM key held in firmware) needs administrator on
+#     some builds. Rather than ask for elevation the module reports the field as
+#     unreadable and says why, because everything else works without it.
