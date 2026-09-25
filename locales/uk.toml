@@ -5,7 +5,6 @@
 
 [module]
 title = "Ліцензії Windows та Office"
-description = "Стан активації Windows та Office на ЦЬОМУ комп'ютері — статус, канал, частина ключа, KMS-хост, пільговий період і термін дії."
 
 [ui]
 title = "Ліцензії Windows та Office"

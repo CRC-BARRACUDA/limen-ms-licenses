@@ -6,7 +6,6 @@
 
 [module]
 title = "Windows & Office licences"
-description = "Activation state of Windows and Office on THIS machine — status, channel, partial key, KMS host, grace and expiry."
 
 [ui]
 title = "Windows & Office licences"

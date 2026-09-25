@@ -5,7 +5,6 @@ version = "0.2.0"
 language = "native"
 entry = "ms_licenses"
 abi = "native"
-description = "Activation state of Windows and Office on THIS machine — status, channel, partial key, KMS host, grace and expiry."
 authors = ["Limen"]
 repo = "CRC-BARRACUDA/limen-ms-licenses"
 tags = ["windows", "licensing", "inventory"]
