@@ -1,0 +1,22 @@
+# Standalone package (it lives inside the Limen repo tree but is its own module).
+[workspace]
+
+[package]
+name = "ms-licenses"
+version = "0.2.0"
+edition = "2021"
+license = "GPL-3.0-or-later"
+description = "Activation state of Windows and Office on THIS machine — status, channel, partial key, KMS host, grace and expiry."
+repository = "https://github.com/CRC-BARRACUDA/limen-ms-licenses"
+
+[lib]
+name = "ms_licenses"
+# `rlib` alongside `cdylib`: a `cdylib` alone cannot be linked by an integration
+# test, and the tests here are worth more than the few KB it costs.
+crate-type = ["cdylib", "rlib"]
+
+[dependencies]
+limen-sdk-rust = { git = "https://github.com/CRC-BARRACUDA/Limen.git" }
+# For `NoConsole`: a console-subsystem child (PowerShell) would otherwise flash
+# a window on every scan in a release GUI build.
+limen-proto = { git = "https://github.com/CRC-BARRACUDA/Limen.git" }

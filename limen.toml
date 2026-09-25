@@ -1,18 +1,20 @@
 [module]
 name = "ms-licenses"
 display_name = "Windows & Office licences"
-version = "0.1.0"
-language = "python"
-entry = "main.py"
+version = "0.2.0"
+language = "native"
+entry = "ms_licenses"
+abi = "native"
 description = "Activation state of Windows and Office on THIS machine — status, channel, partial key, KMS host, grace and expiry."
 authors = ["Limen"]
 repo = "CRC-BARRACUDA/limen-ms-licenses"
 tags = ["windows", "licensing", "inventory"]
 
-# Windows only, and it says so rather than starting elsewhere and answering with
-# an empty list. The licensing store this reads — `SoftwareLicensingProduct` and
-# the Click-to-Run registry — exists on no other platform, so an empty answer
-# here would read as "nothing is licensed" rather than "wrong machine".
+# Windows only, and the host honours it: a module that names platforms and not
+# the running one is dropped at discovery, so this never appears in the module
+# manager elsewhere. The licensing store it reads — `SoftwareLicensingProduct`
+# and the Click-to-Run registry — exists on no other platform, and an empty
+# answer there would read as "nothing is licensed" rather than "wrong machine".
 os = ["windows"]
 
 [provides]
@@ -27,11 +29,17 @@ capabilities = ["licenses.ms"]
 # changed — the module reads.
 subprocess = true
 
+# For one field, and only when the user asks for it.
+#
+# The OEM product key held in firmware needs administrator on most builds.
+# Everything else here works as an ordinary user and is read without any
+# prompt; the scan reports that one field as unreadable and offers a button.
+# Pressing it runs a single command — one property, written to a file in this
+# module's own directory — and the operating system asks for the privileges.
+# Nothing else is elevated, and nothing is elevated without being asked for.
+elevate = true
+
 # Deliberately NOT here:
 #
 #   network — the module never leaves the machine. Activation state is read
 #     locally; it does not phone Microsoft and does not report anywhere.
-#
-#   elevate — one field (the OEM key held in firmware) needs administrator on
-#     some builds. Rather than ask for elevation the module reports the field as
-#     unreadable and says why, because everything else works without it.

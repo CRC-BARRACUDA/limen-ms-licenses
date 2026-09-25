@@ -45,23 +45,34 @@ The full key is deliberately **not** recovered from the registry, which is a thi
 this module could do and does not. Identifying a licence and handing over a
 credential are different jobs, and only the first belongs in an inventory tool.
 
+The **OEM key in firmware** is the one exception, and it is a deliberate one: it
+is shown in full, because recovering the key of the machine you are sitting at is
+the entire reason anybody looks for it, and a masked one would be useless. It is
+never read unless you press the button and then tell Windows to allow it.
+
 ## What it asks for
 
-`subprocess`, to run PowerShell. That is the lot.
+`subprocess`, to run PowerShell, and `elevate` — for one field, when asked.
 
 - **No `network`.** Activation state is read locally. The module does not phone
   Microsoft and does not report anywhere.
-- **No `elevate`.** One field — the OEM key held in firmware — needs
-  administrator on some builds. Rather than ask for elevation for one field, the
-  module reports that field as unreadable and says why. Everything else works as
-  an ordinary user.
-- **Nothing is changed.** No activation, no rearm, no install, no removal, no
-  files written. The query reads.
+- **`elevate`, for one field and on request.** The OEM product key held in
+  firmware needs administrator on most builds. Everything else on the screen is
+  read as an ordinary user, with no prompt at all; that one field comes back
+  marked unreadable, with a button beside it. Pressing it runs **one command** —
+  a single property, written to a file in this module's own directory — and
+  Windows asks you whether to allow it. Nothing else is elevated, nothing is
+  elevated without being asked for, and refusing costs you only that field.
+- **Nothing is changed.** No activation, no rearm, no install, no removal. The
+  only file written is the one the elevated read uses to hand the value back,
+  and it is deleted as soon as it has been read.
 
 ## Why it refuses to run elsewhere
 
-The manifest says `os = ["windows"]`, and Limen does not start the module on
-anything else — it stays listed, with the reason on the card.
+The manifest says `os = ["windows"]`, and Limen honours it: a module that names
+the platforms it runs on, on one it did not name, is dropped at discovery. It is
+not started, not listed in the module manager, and not reported as broken —
+because nothing is broken. It is for another machine.
 
 Without that, this module installs on Linux, starts, finds no licensing store, and
 answers with an empty list. **An empty list reads like a finding**: nothing on
@@ -88,14 +99,21 @@ a status chart and the tables.
 English and Ukrainian, screens and all — not just the module card. The host says
 which, and the screen follows on the next draw.
 
-## Tests
+## Building and testing
+
+A native (`cdylib`) module, written in Rust against `limen-sdk-rust`.
 
 ```sh
-python3 tests.py
+cargo test                      # runs on any platform
+scripts/package-windows.ps1     # the release asset + its .sha256
 ```
 
-Runs anywhere, including here. The PowerShell query is Windows only — which is the
-point of the module — so what the tests cover is everything around it: the parsing
-of what it prints, the order rows come out in, the screens in both languages, the
-capability method's filtering, and that every string the code asks for exists in
-both catalogs with nothing unused. The query itself is verified on a Windows host.
+The tests run anywhere, including on Linux. The PowerShell query is Windows only
+— which is the point of the module — so what they cover is everything around it:
+the parsing of what it prints, the order rows come out in, the screens in both
+languages, what the report provider is handed, and that every string the code
+asks for exists in both catalogs with nothing unused. The query itself is
+verified on a Windows host.
+
+There is no `package.sh`: a `.so` built from these sources is an artifact no
+machine could load.

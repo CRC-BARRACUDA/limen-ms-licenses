@@ -42,6 +42,17 @@ value = "Value"
 
 [note]
 no_oem = "The OEM key held in firmware could not be read. On some builds that field needs administrator; everything else here does not."
+read_oem = "Read it as administrator"
+
+[oem]
+title = "Reading the OEM key"
+authorizing = "Waiting for you to allow it"
+why = "Windows is asking whether this may run as administrator. The OEM key held in firmware is the one field here that needs it — nothing else is elevated, and the command reads that one property and stops."
+refused = "Not allowed, so the OEM key was not read. Everything else on this screen was read without it."
+unavailable = "This machine offers no way to ask for administrator, so the OEM key cannot be read here."
+failed = "The elevated command did not finish properly, so the OEM key was not read."
+none = "Read as administrator, and this machine has no OEM key in its firmware — which is ordinary for an install that was not preloaded by the manufacturer."
+item = "OEM key in firmware"
 
 [error]
 no_powershell = "PowerShell could not be run, so the licensing store was not read. It is what this machine keeps activation state in — there is no other source."
