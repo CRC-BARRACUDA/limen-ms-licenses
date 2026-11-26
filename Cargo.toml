@@ -3,7 +3,7 @@
 
 [package]
 name = "ms-licenses"
-version = "0.2.0"
+version = "0.3.0"
 edition = "2021"
 license = "GPL-3.0-or-later"
 description = "Activation state of Windows and Office on THIS machine — status, channel, partial key, KMS host, grace and expiry."
