@@ -140,7 +140,9 @@ pub(crate) fn results_view(
 
     let mut actions = vec![button(t("ui.rescan"), CAP, "scan")];
     if report {
-        actions.push(button(t("ui.report"), CAP, "make_report").open_in_tab());
+        // Not `open_in_tab`: the report provider answers with a pop-up, and
+        // one opened into a tab of its own leaves that tab empty.
+        actions.push(button(t("ui.report"), CAP, "make_report"));
     }
     widgets.push(row(actions));
 

@@ -6,9 +6,30 @@
 
 use crate::*;
 
+/// This machine's name, for the report's subtitle and its filename.
+///
+/// Read from the environment — no new permission, and no process spawned for a
+/// string the system already has. Empty rather than a guess if it is not there:
+/// a report labelled "unknown" is one somebody has to open to identify.
+pub(crate) fn hostname() -> String {
+    for var in ["COMPUTERNAME", "HOSTNAME"] {
+        if let Ok(name) = std::env::var(var) {
+            if !name.trim().is_empty() {
+                return name.trim().to_string();
+            }
+        }
+    }
+    String::new()
+}
+
 /// The last scan as a report provider expects it: a summary, a chart of
 /// statuses, and the same tables the screen shows.
 pub(crate) fn report_spec(lang: &str, lics: &[License], facts: &[Fact]) -> Value {
+    report_spec_for(lang, lics, facts, &hostname())
+}
+
+/// [`report_spec`] for the machine named `host` ("" when it has no name to give).
+pub(crate) fn report_spec_for(lang: &str, lics: &[License], facts: &[Fact], host: &str) -> Value {
     let t = |k: &str| catalog().tr(lang, k);
     let bad = lics.iter().filter(|l| !l.ok()).count();
 
@@ -51,9 +72,18 @@ pub(crate) fn report_spec(lang: &str, lics: &[License], facts: &[Fact]) -> Value
 
     json!({
         "title": t("report.title"),
-        "subtitle": t("report.subtitle")
+        // The machine this is about, in the line under the title and in the
+        // name the file is offered under. The report module adds the date; a
+        // folder of files all called "licenses" is one nobody can find
+        // anything in.
+        "subtitle": t(if host.is_empty() { "report.subtitle" } else { "report.subtitle_host" })
+            .replace("{host}", host)
             .replace("{total}", &lics.len().to_string())
             .replace("{bad}", &bad.to_string()),
+        "file_name": if host.is_empty() { "licenses".to_string() } else { format!("{host}_licenses") },
+        // Always the provider's preview. What the document is — a PDF — the
+        // ground it is printed on, and whether it is signed are decided there,
+        // beside the thing being saved, by the module that owns the question.
         "format": "view",
         "summary": [
             t("report.line_total").replace("{n}", &lics.len().to_string()),
@@ -70,10 +100,10 @@ pub(crate) fn report_spec(lang: &str, lics: &[License], facts: &[Fact]) -> Value
 
 /// What the screen says when the report has been handed over.
 ///
-/// A provider that *renders* answers with a view, which is shown as it is. One
-/// that *exports* writes a file, opens it, and acknowledges with nothing — so
-/// there has to be something to show for it, or the tab opens empty and the
-/// user cannot tell success from silence.
+/// A provider that *renders* answers with a view, which is shown as it is —
+/// the one shipped with Limen always does: its preview. One that only writes a
+/// file acknowledges with nothing — so there has to be something to show for
+/// it, or the user cannot tell success from silence.
 pub(crate) fn delivered(lang: &str, built: Value) -> Value {
     let t = |k: &str| catalog().tr(lang, k);
     if built.get("widgets").is_some() {
@@ -81,10 +111,7 @@ pub(crate) fn delivered(lang: &str, built: Value) -> Value {
     }
     window(
         t("report.title"),
-        vec![
-            label(t("report.exported")).strong(),
-            label(t("report.exported_hint")).weak(),
-        ],
+        vec![label(t("report.written")).strong()],
     )
 }
 

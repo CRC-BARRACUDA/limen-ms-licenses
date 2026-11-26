@@ -101,6 +101,31 @@ fn the_report_action_appears_only_with_a_provider() {
     assert!(with.contains("Make report"), "{with}");
 }
 
+/// The report provider answers with a pop-up — its preview — and a button that
+/// opened a tab of its own for the answer left that tab empty.
+#[test]
+fn the_report_action_does_not_open_a_tab_of_its_own() {
+    fn buttons(v: &Value, out: &mut Vec<Value>) {
+        match v {
+            Value::Object(o) => {
+                if o.get("kind") == Some(&json!("button")) {
+                    out.push(v.clone());
+                }
+                o.values().for_each(|x| buttons(x, out));
+            }
+            Value::Array(a) => a.iter().for_each(|x| buttons(x, out)),
+            _ => {}
+        }
+    }
+    let (lics, facts, flags) = parse(&sample());
+    let view = results_view("en", &lics, &facts, &flags, true);
+    let mut all = Vec::new();
+    buttons(&view, &mut all);
+    let report: Vec<&Value> = all.iter().filter(|b| b["action"]["method"] == "make_report").collect();
+    assert_eq!(report.len(), 1, "{view}");
+    assert!(report[0].get("open_in_tab").is_none(), "{}", report[0]);
+}
+
 /// A screen that says the store could not be read has to offer a way to try
 /// again — the usual causes are things the user can put right.
 #[test]
