@@ -58,14 +58,39 @@ fn a_rendered_report_is_shown_as_it_came_back() {
     assert_eq!(delivered("en", built.clone()), built);
 }
 
-/// A provider that exports writes a file and acknowledges with nothing. Left
-/// alone, that is a tab that opens empty — so there has to be something saying
-/// what happened.
+/// A provider that only writes a file acknowledges with nothing. Left alone,
+/// that is silence — so there has to be something saying what happened. And it
+/// must not say what it cannot know: that anything was opened.
 #[test]
-fn an_exported_report_still_says_something() {
+fn a_report_only_written_still_says_something() {
     let v = delivered("en", json!({ "ok": true })).to_string();
-    assert!(v.contains("Report exported"), "{v}");
-    assert!(v.contains("opened in your default app"), "{v}");
+    assert!(v.contains("Report written"), "{v}");
+    assert!(!v.contains("opened"), "{v}");
+}
+
+/// The report is filed under the machine it is about, and the line under the
+/// title names it too — a folder of files all called "licenses" is one nobody
+/// can find anything in. The date is the report module's to add.
+#[test]
+fn the_report_is_named_after_the_machine() {
+    let (lics, facts, _) = parse(&format!("#begin\n{}", lic("windows", "Windows Pro", "1")));
+    for (lang, said) in [("en", "WS-ALPHA · 1 product(s)"), ("uk", "WS-ALPHA · ")] {
+        let spec = report_spec_for(lang, &lics, &facts, "WS-ALPHA");
+        assert_eq!(spec["file_name"], json!("WS-ALPHA_licenses"));
+        let subtitle = spec["subtitle"].as_str().unwrap();
+        assert!(subtitle.starts_with(said), "{lang}: {subtitle}");
+        assert!(!subtitle.contains('{'), "{lang}: {subtitle}");
+    }
+}
+
+/// A machine that will not give up its name still produces a report, and one
+/// that does not open with a stray separator.
+#[test]
+fn a_nameless_machine_still_reports() {
+    let (lics, facts, _) = parse(&format!("#begin\n{}", lic("windows", "Windows Pro", "1")));
+    let spec = report_spec_for("en", &lics, &facts, "");
+    assert_eq!(spec["file_name"], json!("licenses"));
+    assert_eq!(spec["subtitle"], json!("1 product(s) · 0 needing attention"));
 }
 
 /// Both failure screens say which failure it was.

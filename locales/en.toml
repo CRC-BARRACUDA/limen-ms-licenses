@@ -60,10 +60,10 @@ timeout = "The licensing query did not finish in time. That usually means the So
 [report]
 title = "Licence report"
 subtitle = "{total} product(s) · {bad} needing attention"
+subtitle_host = "{host} · {total} product(s) · {bad} needing attention"
 by_status = "Products by status"
 line_total = "Products found: {n}"
 line_bad = "Not properly licensed: {n}"
 nothing = "Nothing has been checked yet."
 failed = "Couldn't build the report"
-exported = "Report exported"
-exported_hint = "The document was generated and opened in your default app."
+written = "Report written"
