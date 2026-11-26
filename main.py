@@ -335,7 +335,9 @@ def ui():
         widgets.append(Label("! " + _last["flags"]["error"], style="weak"))
     actions = [Button(t("ui.rescan"), calls="scan")]
     if _has_reports():
-        actions.append(Button(t("ui.report"), calls="make_report", open_in_tab=True))
+        # Not `open_in_tab`: the report provider answers with a pop-up, and one
+        # opened into a tab of its own leaves that tab empty.
+        actions.append(Button(t("ui.report"), calls="make_report"))
     widgets.append(Row(actions))
 
     for kind, heading in (("windows", "kind.windows"), ("office", "kind.office"),
@@ -372,8 +374,27 @@ def _has_reports():
         return False
 
 
-def report_spec():
-    """The last scan as a report: a summary, a status chart, and one table."""
+def hostname():
+    """This machine's name, for the report's subtitle and its filename.
+
+    Read from the environment — no new permission, and no process spawned for a
+    string the system already has. Empty rather than a guess if it is not there:
+    a report labelled "unknown" is one somebody has to open to identify.
+    """
+    for var in ("COMPUTERNAME", "HOSTNAME"):
+        name = (os.environ.get(var) or "").strip()
+        if name:
+            return name
+    return ""
+
+
+def report_spec(host=None):
+    """The last scan as a report: a summary, a status chart, and one table.
+
+    `host` is the machine's name ("" when it has none to give); left out, it is
+    asked for.
+    """
+    host = hostname() if host is None else host
     lics = _last["lics"] or []
     bad = [r for r in lics if not r["ok"]]
     counts = {}
@@ -394,7 +415,15 @@ def report_spec():
         })
     return {
         "title": t("report.title"),
-        "subtitle": t("report.subtitle", total=len(lics), bad=len(bad)),
+        # The machine this is about, in the line under the title and in the name
+        # the file is offered under. The report module adds the date; a folder of
+        # files all called "licenses" is one nobody can find anything in.
+        "subtitle": (t("report.subtitle_host", host=host, total=len(lics), bad=len(bad))
+                     if host else t("report.subtitle", total=len(lics), bad=len(bad))),
+        "file_name": f"{host}_licenses" if host else "licenses",
+        # Always the provider's preview. What the document is — a PDF — the
+        # ground it is printed on, and whether it is signed are decided there,
+        # beside the thing being saved, by the module that owns the question.
         "format": "view",
         "summary": [
             t("report.line_total", n=len(lics)),
@@ -420,13 +449,13 @@ def make_report(params, host):
             Label(t("report.failed"), style="strong"),
             Label(str(exc), style="weak"),
         ]).to_spec()
-    # A provider that renders answers with a view; one that exports a file
-    # writes it, opens it, and acknowledges with nothing.
+    # The provider answers with a screen of its own — it is the report.
     if isinstance(built, dict) and built.get("widgets") is not None:
         return built
+    # A provider that writes a file and acknowledges with nothing. The one
+    # shipped with Limen always answers with a screen; this is for any other.
     return Window(t("report.title"), [
-        Label(t("report.exported"), style="strong"),
-        Label(t("report.exported_hint"), style="weak"),
+        Label(t("report.written"), style="strong"),
     ]).to_spec()
 
 

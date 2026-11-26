@@ -182,6 +182,75 @@ def test_views():
     return bad
 
 
+def test_report():
+    """The report is handed to the provider's preview, and filed under the machine."""
+    bad = 0
+    lics, facts, flags = mod.parse(SAMPLE)
+    mod._last.update(lics=lics, facts=facts, flags=flags, error="")
+
+    spec = mod.report_spec("WS-ALPHA")
+    bad += check("always the provider's preview", spec["format"] == "view", spec["format"])
+    bad += check("filed under the machine it is about",
+                 spec["file_name"] == "WS-ALPHA_licenses", spec["file_name"])
+    bad += check("which the line under the title names too",
+                 spec["subtitle"].startswith("WS-ALPHA · 3 product"), spec["subtitle"])
+    bad += check("every row is as wide as its headings",
+                 all(len(r) == len(s["columns"]) for s in spec["sections"] for r in s["rows"]))
+    bad += check("no key is printed whole in a report either",
+                 "·····-3V66T" in json.dumps(spec, ensure_ascii=False))
+
+    nameless = mod.report_spec("")
+    bad += check("a machine with no name to give still reports",
+                 nameless["file_name"] == "licenses"
+                 and nameless["subtitle"].startswith("3 product"), nameless["subtitle"])
+
+    # The button: the provider answers with a pop-up, and one opened into a tab
+    # of its own leaves that tab empty.
+    mod.m.host = FakeHost(caps=["report.build"])
+
+    def buttons(v):
+        if isinstance(v, dict):
+            if v.get("kind") == "button":
+                yield v
+            for x in v.values():
+                yield from buttons(x)
+        elif isinstance(v, list):
+            for x in v:
+                yield from buttons(x)
+
+    made = [b for b in buttons(mod.m._ui()) if b.get("action", {}).get("method") == "make_report"]
+    bad += check("the report button is on the screen", len(made) == 1, made)
+    bad += check("and does not open a tab of its own",
+                 made and not made[0].get("open_in_tab"), made)
+
+    class Provider(FakeHost):
+        def __init__(self, answer):
+            super().__init__(caps=["report.build"])
+            self.answer, self.sent = answer, None
+
+        def call(self, capability, method, params=None):
+            self.sent = (capability, method, params)
+            return self.answer
+
+    preview = {"title": "Preview", "widgets": [], "modal": True}
+    host = Provider(preview)
+    bad += check("what the provider shows is what is shown",
+                 mod.make_report({}, host) is preview)
+    bad += check("and it was asked for the preview",
+                 host.sent[:2] == ("report.build", "build") and host.sent[2]["format"] == "view",
+                 host.sent)
+    silent = json.dumps(mod.make_report({}, Provider(None)), ensure_ascii=False)
+    bad += check("a provider that only writes a file is acknowledged", "Report written" in silent, silent)
+    refused = json.dumps(mod.make_report({}, FakeHost()), ensure_ascii=False)
+    bad += check("and one that fails is said to have", "Couldn't build the report" in refused, refused)
+
+    mod._last.update(lics=None)
+    empty = json.dumps(mod.make_report({}, Provider(preview)), ensure_ascii=False)
+    bad += check("nothing checked yet is said, not reported", "Nothing has been checked" in empty, empty)
+    mod.m.host = FakeHost()
+    return bad
+
+
 def test_capability_method():
     """The capability answers with data, filtered the way a caller asks."""
     bad = 0

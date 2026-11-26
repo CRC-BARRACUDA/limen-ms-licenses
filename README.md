@@ -80,8 +80,12 @@ not properly licensed, which is the question a fleet report actually asks. It
 answers from the **last scan** rather than scanning again — a caller asking a
 question should not set a PowerShell process going on somebody's machine.
 
-If a `report.build` provider is installed, a **Make report** button appears, with
-a status chart and the tables.
+If a `report.build` provider is installed — the
+[`report`](https://github.com/CRC-BARRACUDA/limen-report) module — a **Make
+report** button appears, with a status chart and the tables. It opens the
+provider's preview: what the document is, the ground it is printed on and whether
+it is signed with your OpenPGP key are chosen there. The report is filed under
+the machine's name.
 
 ## Languages
 
